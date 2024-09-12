@@ -1,0 +1,73 @@
+#Nesse manifesto onde colocamos os valores aceitos ou que serão usados para o deploy da aplicação
+#Evitar de usar - no nome, por isso giropopsSenhas
+deployments:
+  giropops-senhas:
+    name: "giropops-senhas-helm"
+    image: "linuxtips/giropops-senhas:1.0"
+    replicas: "3"
+    labels:
+      app: "giropops-senhas"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"   
+    ports:
+      - port: 5000
+        targetPort: 5000
+        name: "giropops-senhas-port"
+        serviceType: "NodePort"
+        NodePort: 32500     
+      - port: 8088
+        targetPort: 8088
+        name: "giropops-senhas-metrics"
+        serviceType: "ClusterIP"
+  redis:
+    name: "redis-helm"
+    image: "redis"
+    replicas: "1"
+    labels:
+      app: "redis"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"       
+services:
+  giropops-senhas:
+    ports:
+    - port: 5000
+      targetPort: 5000
+      name: "giropops-senhas-port"
+      serviceType: "NodePort"
+      nodePort: 32500
+    - port: 8088
+      targetPort: 8088
+      name: "giropops-senhas-metrics"
+      serviceType: "ClusterIP"
+    labels:
+      app: "giropops-senhas"
+  redis:
+    ports:
+    - port: 6379
+      targetPort: 6379
+      name: "redis-service"
+      serviceType: "ClusterIP"
+    labels:
+      app: "redis"
+observability:
+  giropops-senhas:
+    logging: true
+    metrics:
+      enabled: true
+      path: "/metrics"
+databases:
+  giropops-senhas:
+    mysql:
+      host: "mysql.svc.cluster.local"
+      port: 3306
+      name: "MyDB"

@@ -1,0 +1,43 @@
+{{- range $component, $config := .Values.deployments }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $component }}
+  labels:
+    {{- include "qualquernome" $config | nindent 4 }}
+spec:
+  #Se nao estiver especificado no values, usa o default
+  replicas: {{ $config.replicas | default 2 }}
+  selector:
+    matchLabels:
+      {{- include "qualquernome" $config | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "qualquernome" $config | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ $component }}
+        image: {{ $config.image }}
+        ports: 
+        {{- include "app.ports" $config | nindent 10 }}
+        resources:
+          {{- include "app.resources" $config | nindent 12 }}
+---
+{{- end}}
+
+
+
+# Exemplo:
+
+# deployments:
+#   app1:
+#     replicas: 3
+#     image: nginx
+#   app2:
+#     replicas: 2
+#     image: redis
+
+# Na primeira iteração, $component será app1
+# $config será o objeto associado a ele: { replicas: 3, image: nginx }.
+# Na segunda iteração, $component será app2 e $config será { replicas: 2, image: redis }.
